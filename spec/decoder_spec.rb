@@ -195,30 +195,30 @@ describe Pocketsphinx::Decoder do
     end
   end
 
-  describe '#set_jsgf_string' do
+  describe '#add_jsgf_string' do
     it 'calls libpocketsphinx' do
       expect(ps_api)
-        .to receive(:ps_set_jsgf_string)
+        .to receive(:ps_add_jsgf_string)
         .with(subject.ps_decoder, 'default', 'JSGF')
         .and_return(0)
 
-      subject.set_jsgf_string('JSGF')
+      subject.add_jsgf_string('JSGF')
     end
 
     it 'raises an exception on error' do
       expect(ps_api)
-        .to receive(:ps_set_jsgf_string)
+        .to receive(:ps_add_jsgf_string)
         .and_return(-1)
 
-      expect { subject.set_jsgf_string('JSGF') }
-        .to raise_exception "Decoder#set_jsgf_string failed with error code -1"
+      expect { subject.add_jsgf_string('JSGF') }
+        .to raise_exception "Decoder#add_jsgf_string failed with error code -1"
     end
   end
 
   describe '#set_search' do
     it 'calls libpocketsphinx' do
       expect(ps_api)
-        .to receive(:ps_set_search)
+        .to receive(:ps_activate_search)
         .with(subject.ps_decoder, 'search')
         .and_return(0)
 
@@ -227,7 +227,7 @@ describe Pocketsphinx::Decoder do
 
     it 'raises an exception on error' do
       expect(ps_api)
-        .to receive(:ps_set_search)
+        .to receive(:ps_activate_search)
         .and_return(-1)
 
       expect { subject.set_search('search') }
@@ -238,7 +238,7 @@ describe Pocketsphinx::Decoder do
   describe '#unset_search' do
     it 'calls libpocketsphinx' do
       expect(ps_api)
-        .to receive(:ps_unset_search)
+        .to receive(:ps_remove_search)
         .with(subject.ps_decoder, 'search')
         .and_return(0)
 
@@ -247,7 +247,7 @@ describe Pocketsphinx::Decoder do
 
     it 'raises an exception on error' do
       expect(ps_api)
-        .to receive(:ps_unset_search)
+        .to receive(:ps_remove_search)
         .and_return(-1)
 
       expect { subject.unset_search('search') }
@@ -258,7 +258,7 @@ describe Pocketsphinx::Decoder do
   describe '#get_search' do
     it 'calls libpocketsphinx' do
       expect(ps_api)
-        .to receive(:ps_get_search)
+        .to receive(:ps_current_search)
         .and_return(:search)
 
       expect(subject.get_search).to eq(:search)

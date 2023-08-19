@@ -27,10 +27,10 @@ module Pocketsphinx
       attach_function :ps_get_in_speech, [:decoder], :uint8
       attach_function :ps_get_hyp, [:decoder, :pointer], :string
       attach_function :ps_get_prob, [:decoder], :int32
-      attach_function :ps_set_jsgf_string, [:decoder, :string, :string], :int
-      attach_function :ps_unset_search, [:decoder, :string], :int
-      attach_function :ps_get_search, [:decoder], :string
-      attach_function :ps_set_search, [:decoder, :string], :int
+      attach_function :ps_add_jsgf_string, [:decoder, :string, :string], :int
+      attach_function :ps_remove_search, [:decoder, :string], :int
+      attach_function :ps_current_search, [:decoder], :string
+      attach_function :ps_activate_search, [:decoder, :string], :int
 
       typedef :pointer, :seg_iter
 

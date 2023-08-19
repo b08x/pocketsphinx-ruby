@@ -158,13 +158,13 @@ module Pocketsphinx
     #
     # @param [String] jsgf_string The JSGF grammar
     # @param [String] name The search name
-    def set_jsgf_string(jsgf_string, name = 'default')
-      api_call :ps_set_jsgf_string, ps_decoder, name, jsgf_string
+    def add_jsgf_string(jsgf_string, name = 'default')
+      api_call :ps_add_jsgf_string, ps_decoder, name, jsgf_string
     end
 
     # Returns name of curent search in decoder
     def get_search
-      ps_api.ps_get_search(ps_decoder)
+      ps_api.ps_current_search(ps_decoder)
     end
 
     # Actives search with the provided name.
@@ -172,7 +172,7 @@ module Pocketsphinx
     # Activates search with the provided name. The search must be added before
     # using either ps_set_fsg(), ps_set_lm() or ps_set_kws().
     def set_search(name = 'default')
-      api_call :ps_set_search, ps_decoder, name
+      api_call :ps_activate_search, ps_decoder, name
     end
 
     # Unsets the search and releases related resources.
@@ -180,7 +180,7 @@ module Pocketsphinx
     # Unsets the search previously added with
     # using either ps_set_fsg(), ps_set_lm() or ps_set_kws().
     def unset_search(name = 'default')
-      api_call :ps_unset_search, ps_decoder, name
+      api_call :ps_remove_search, ps_decoder, name
     end
 
     def ps_api

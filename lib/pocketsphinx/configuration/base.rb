@@ -9,7 +9,7 @@ module Pocketsphinx
         @setting_definitions = SettingDefinition.from_arg_defs(@ps_arg_defs)
 
         # Sets default settings based on definitions
-        @ps_config = API::Sphinxbase.cmd_ln_parse_r(nil, @ps_arg_defs, 0, nil, 1)
+        @ps_config = API::Sphinxbase.ps_config_init(nil, @ps_arg_defs, 0, nil, 1)
       end
 
       def setting_names
@@ -40,13 +40,13 @@ module Pocketsphinx
       def [](name)
         case find_definition(name).type
         when :integer
-          API::Sphinxbase.cmd_ln_int_r(ps_config, "-#{name}")
+          API::Sphinxbase.ps_config_int(ps_config, "-#{name}")
         when :float
-          API::Sphinxbase.cmd_ln_float_r(ps_config, "-#{name}")
+          API::Sphinxbase.ps_config_float(ps_config, "-#{name}")
         when :string
-          API::Sphinxbase.cmd_ln_str_r(ps_config, "-#{name}")
+          API::Sphinxbase.ps_config_str(ps_config, "-#{name}")
         when :boolean
-          API::Sphinxbase.cmd_ln_int_r(ps_config, "-#{name}") != 0
+          API::Sphinxbase.ps_config_int(ps_config, "-#{name}") != 0
         when :string_list
           raise NotImplementedError
         end
@@ -58,13 +58,13 @@ module Pocketsphinx
 
         case type
         when :integer
-          API::Sphinxbase.cmd_ln_set_int_r(ps_config, "-#{name}", value.to_i)
+          API::Sphinxbase.ps_config_set_int(ps_config, "-#{name}", value.to_i)
         when :float
-          API::Sphinxbase.cmd_ln_set_float_r(ps_config, "-#{name}", value.to_f)
+          API::Sphinxbase.ps_config_set_float(ps_config, "-#{name}", value.to_f)
         when :string
-          API::Sphinxbase.cmd_ln_set_str_r(ps_config, "-#{name}", (value.to_s if value))
+          API::Sphinxbase.ps_config_set_str(ps_config, "-#{name}", (value.to_s if value))
         when :boolean
-          API::Sphinxbase.cmd_ln_set_int_r(ps_config, "-#{name}", value ? 1 : 0)
+          API::Sphinxbase.ps_config_set_int(ps_config, "-#{name}", value ? 1 : 0)
         when :string_list
           raise NotImplementedError
         end

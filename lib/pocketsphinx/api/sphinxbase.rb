@@ -2,7 +2,7 @@ module Pocketsphinx
   module API
     module Sphinxbase
       extend FFI::Library
-      ffi_lib "libsphinxbase"
+      ffi_lib "libpocketsphinx"
 
       class Argument < FFI::Struct
         layout :name, :string,
@@ -12,13 +12,13 @@ module Pocketsphinx
       end
 
       # TODO: Document on ruby side?
-      attach_function :cmd_ln_parse_r, [:pointer, :pointer, :int32, :pointer, :int], :pointer
-      attach_function :cmd_ln_float_r, [:pointer, :string], :double
-      attach_function :cmd_ln_set_float_r, [:pointer, :string, :double], :void
-      attach_function :cmd_ln_int_r, [:pointer, :string], :int
-      attach_function :cmd_ln_set_int_r, [:pointer, :string, :int], :void
-      attach_function :cmd_ln_str_r, [:pointer, :string], :string
-      attach_function :cmd_ln_set_str_r, [:pointer, :string, :string], :void
+      attach_function :ps_config_init, [:pointer, :pointer, :int32, :pointer, :int], :pointer
+      attach_function :ps_config_float, [:pointer, :string], :double
+      attach_function :ps_config_set_float, [:pointer, :string, :double], :void
+      attach_function :ps_config_int, [:pointer, :string], :int
+      attach_function :ps_config_set_int, [:pointer, :string, :int], :void
+      attach_function :ps_config_str, [:pointer, :string], :string
+      attach_function :ps_config_set_str, [:pointer, :string, :string], :void
       attach_function :err_set_logfile, [:string], :int
       attach_function :err_set_logfp, [:pointer], :void
     end
