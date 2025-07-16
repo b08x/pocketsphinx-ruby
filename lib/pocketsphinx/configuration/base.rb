@@ -8,8 +8,15 @@ module Pocketsphinx
         @ps_arg_defs = API::Pocketsphinx.ps_args
         @setting_definitions = SettingDefinition.from_arg_defs(@ps_arg_defs)
 
-        # Sets default settings based on definitions
-        @ps_config = API::Sphinxbase.ps_config_init(nil, @ps_arg_defs, 0, nil, 1)
+        # Create new ps_config_t object using the v5 API
+        @ps_config = API::Pocketsphinx.ps_config_init(nil)
+        
+        # Set up finalizer to free the ps_config_t object when Ruby object is garbage collected
+        ObjectSpace.define_finalizer(self, self.class.finalize(@ps_config))
+      end
+
+      def self.finalize(ps_config)
+        proc { API::Pocketsphinx.ps_config_free(ps_config) if ps_config }
       end
 
       def setting_names
@@ -40,13 +47,13 @@ module Pocketsphinx
       def [](name)
         case find_definition(name).type
         when :integer
-          API::Sphinxbase.ps_config_int(ps_config, "-#{name}")
+          API::Pocketsphinx.ps_config_int(ps_config, name)
         when :float
-          API::Sphinxbase.ps_config_float(ps_config, "-#{name}")
+          API::Pocketsphinx.ps_config_float(ps_config, name)
         when :string
-          API::Sphinxbase.ps_config_str(ps_config, "-#{name}")
+          API::Pocketsphinx.ps_config_str(ps_config, name)
         when :boolean
-          API::Sphinxbase.ps_config_int(ps_config, "-#{name}") != 0
+          API::Pocketsphinx.ps_config_bool(ps_config, name) != 0
         when :string_list
           raise NotImplementedError
         end
@@ -58,16 +65,39 @@ module Pocketsphinx
 
         case type
         when :integer
-          API::Sphinxbase.ps_config_set_int(ps_config, "-#{name}", value.to_i)
+          API::Pocketsphinx.ps_config_set_int(ps_config, name, value.to_i)
         when :float
-          API::Sphinxbase.ps_config_set_float(ps_config, "-#{name}", value.to_f)
+          API::Pocketsphinx.ps_config_set_float(ps_config, name, value.to_f)
         when :string
-          API::Sphinxbase.ps_config_set_str(ps_config, "-#{name}", (value.to_s if value))
+          API::Pocketsphinx.ps_config_set_str(ps_config, name, (value.to_s if value))
         when :boolean
-          API::Sphinxbase.ps_config_set_int(ps_config, "-#{name}", value ? 1 : 0)
+          API::Pocketsphinx.ps_config_set_bool(ps_config, name, value ? 1 : 0)
         when :string_list
           raise NotImplementedError
         end
+      end
+
+      # Get the parameter type for a setting
+      def typeof(name)
+        API::Pocketsphinx.ps_config_typeof(ps_config, name)
+      end
+
+      # Validate the configuration
+      def validate
+        result = API::Pocketsphinx.ps_config_validate(ps_config)
+        result == 0
+      end
+
+      # Serialize configuration to JSON
+      def to_json
+        API::Pocketsphinx.ps_config_serialize_json(ps_config)
+      end
+
+      # Parse JSON configuration
+      def self.from_json(json)
+        config = new
+        config.instance_variable_set(:@ps_config, API::Pocketsphinx.ps_config_parse_json(nil, json))
+        config
       end
 
       private

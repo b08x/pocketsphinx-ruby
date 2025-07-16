@@ -7,6 +7,9 @@ module Pocketsphinx
         # Sets default grammar and language model if they are not set explicitly and
         # are present in the default search path.
         API::Pocketsphinx.ps_default_search_args(@ps_config)
+        
+        # Expand model configuration with default paths
+        API::Pocketsphinx.ps_expand_model_config(@ps_config)
 
         # Treat ps_default_search_args settings as defaults
         changes.each do |details|

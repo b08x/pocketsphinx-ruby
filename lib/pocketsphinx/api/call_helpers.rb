@@ -7,6 +7,7 @@ module Pocketsphinx
         calling_method = caller[0][/`.*'/][1..-2]
         ps_api.send(method, *args).tap do |result|
           if result < 0
+            # PocketSphinx v5 doesn't have ps_get_pub_err_msg, use basic error reporting
             raise Error, "#{self.class.to_s.split('::').last}##{calling_method} failed with error code #{result}"
           end
         end
