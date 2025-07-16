@@ -10,6 +10,8 @@ module Pocketsphinx
       typedef :pointer, :seg_iter
       typedef :pointer, :nbest_iter
       typedef :pointer, :lattice
+      typedef :pointer, :endpointer
+      typedef :pointer, :vad
 
       # Configuration object functions
       attach_function :ps_config_init, [:pointer], :configuration
@@ -98,6 +100,24 @@ module Pocketsphinx
       attach_function :ps_remove_search, [:decoder, :string], :int
       attach_function :ps_current_search, [:decoder], :string
       attach_function :ps_activate_search, [:decoder, :string], :int
+
+      # VAD functions
+      attach_function :ps_vad_init, [:int, :double, :int], :vad
+      attach_function :ps_vad_retain, [:vad], :vad
+      attach_function :ps_vad_free, [:vad], :int
+      attach_function :ps_vad_frame_size, [:vad], :size_t
+      attach_function :ps_vad_sample_rate, [:vad], :int
+
+      # Endpointer functions for Voice Activity Detection
+      attach_function :ps_endpointer_init, [:double, :double, :int, :int, :double], :endpointer
+      attach_function :ps_endpointer_retain, [:endpointer], :endpointer
+      attach_function :ps_endpointer_free, [:endpointer], :int
+      attach_function :ps_endpointer_vad, [:endpointer], :vad
+      attach_function :ps_endpointer_process, [:endpointer, :pointer], :pointer
+      attach_function :ps_endpointer_end_stream, [:endpointer, :pointer, :size_t, :pointer], :pointer
+      attach_function :ps_endpointer_in_speech, [:endpointer], :int
+      attach_function :ps_endpointer_speech_start, [:endpointer], :double
+      attach_function :ps_endpointer_speech_end, [:endpointer], :double
 
       # Allows expect(API::Pocketsphinx).to receive(:ps_init) in JRuby specs
       def self.ps_init(*args)

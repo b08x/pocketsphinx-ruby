@@ -21,6 +21,7 @@ require "pocketsphinx/configuration/grammar"
 
 require "pocketsphinx/audio_file"
 require "pocketsphinx/microphone"
+require "pocketsphinx/endpointer"
 require "pocketsphinx/decoder"
 require "pocketsphinx/speech_recognizer"
 require "pocketsphinx/live_speech_recognizer"
