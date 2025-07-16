@@ -26,7 +26,15 @@ module Pocketsphinx
     end
 
     def self.finalize(ps_api, ps_audio_device)
-      proc { ps_api.ad_close(ps_audio_device) }
+      proc do
+        if ps_api && ps_audio_device
+          begin
+            ps_api.ad_close(ps_audio_device)
+          rescue => e
+            # Ignore errors during finalization
+          end
+        end
+      end
     end
 
     def record

@@ -7,6 +7,7 @@ module Pocketsphinx
     attr_writer :recordable
     attr_writer :decoder
     attr_writer :configuration
+    attr_writer :endpointer
 
     ALGORITHMS = [:after_speech, :continuous]
 
@@ -26,6 +27,10 @@ module Pocketsphinx
       @configuration ||= Configuration.default
     end
 
+    def endpointer
+      @endpointer ||= Endpointer.new
+    end
+
     # Reinitialize the decoder with updated configuration.
     #
     # See Decoder#reconfigure
@@ -42,17 +47,19 @@ module Pocketsphinx
 
     # Recognize speech and yield hypotheses in infinite loop
     #
-    # @param [Fixnum] max_samples Number of samples to process at a time
-    def recognize(max_samples = 2048, &b)
+    # @param [Fixnum] max_samples Number of samples to process at a time (ignored, uses endpointer frame size)
+    def recognize(max_samples = nil, &b)
       unless ALGORITHMS.include?(algorithm)
         raise NotImplementedError, "Unknown speech recognition algorithm: #{algorithm}"
       end
 
       start unless recognizing?
 
-      FFI::MemoryPointer.new(:int16, max_samples) do |buffer|
+      # Use endpointer frame size for proper VAD processing
+      frame_size = endpointer.frame_size
+      FFI::MemoryPointer.new(:int16, frame_size) do |buffer|
         loop do
-          send("recognize_#{algorithm}", max_samples, buffer, &b) or break
+          send("recognize_#{algorithm}", frame_size, buffer, &b) or break
         end
       end
     ensure
@@ -60,8 +67,8 @@ module Pocketsphinx
     end
 
     def in_speech?
-      # Use Pocketsphinx's implementation by default
-      decoder.in_speech?
+      # Use endpointer for Voice Activity Detection in v5
+      endpointer.in_speech?
     end
 
     def recognizing?
@@ -78,12 +85,10 @@ module Pocketsphinx
 
     def start
       recordable.start_recording
-      decoder.start_utterance
       @recognizing = true
     end
 
     def stop
-      decoder.end_utterance
       recordable.stop_recording
       @recognizing = false
     end
@@ -105,52 +110,98 @@ module Pocketsphinx
     private
 
     # Yields as soon as any hypothesis is available
-    def recognize_continuous(max_samples, buffer)
-      process_audio(buffer, max_samples).tap do
-        if hypothesis = decoder.hypothesis
-          decoder.end_utterance
-
-          yield hypothesis
-
+    def recognize_continuous(frame_size, buffer)
+      # Read a frame of audio data
+      return false unless read_frame(buffer, frame_size)
+      
+      # Track previous speech state for start/end detection
+      prev_in_speech = endpointer.in_speech?
+      
+      # Process frame through endpointer for VAD
+      speech = endpointer.process(buffer)
+      
+      if speech && !speech.null?
+        # Speech detected - start utterance if we weren't in speech before
+        if !prev_in_speech
           decoder.start_utterance
         end
+        
+        # Process speech data through decoder
+        decoder.process_raw(speech, frame_size)
+        
+        # Yield hypothesis immediately if available (continuous mode)
+        if hypothesis = decoder.hypothesis
+          yield hypothesis
+        end
+        
+        # Reset for next utterance in continuous mode
+        if !endpointer.in_speech?
+          decoder.end_utterance
+        end
       end
+      
+      true
     end
 
     # Splits speech into utterances by detecting silence between them.
-    # By default this uses Pocketsphinx's internal Voice Activity Detection (VAD) which can be
-    # configured by adjusting the `vad_postspeech`, `vad_prespeech`, and `vad_threshold` settings.
-    def recognize_after_speech(max_samples, buffer)
-      if in_speech?
-        while in_speech?
-          process_audio(buffer, max_samples) or break
+    # Uses PocketSphinx v5's endpointer for Voice Activity Detection (VAD).
+    def recognize_after_speech(frame_size, buffer)
+      # Read a frame of audio data
+      return false unless read_frame(buffer, frame_size)
+      
+      # Track previous speech state for start/end detection
+      prev_in_speech = endpointer.in_speech?
+      
+      # Process frame through endpointer for VAD
+      speech = endpointer.process(buffer)
+      
+      if speech && !speech.null?
+        # Speech detected - start utterance if we weren't in speech before
+        if !prev_in_speech
+          puts "Speech start at %.2f" % endpointer.speech_start if $DEBUG
+          decoder.start_utterance
         end
-
-        decoder.end_utterance
-
+        
+        # Process speech data through decoder
+        decoder.process_raw(speech, frame_size)
+        
+        # Get partial hypothesis
         if hypothesis = decoder.hypothesis
-          yield hypothesis
+          puts "PARTIAL: #{hypothesis}" if $DEBUG
         end
-
-        decoder.start_utterance
+        
+        # Check if speech ended
+        if !endpointer.in_speech?
+          puts "Speech end at %.2f" % endpointer.speech_end if $DEBUG
+          decoder.end_utterance
+          
+          # Yield final hypothesis if available
+          if hypothesis = decoder.hypothesis
+            yield hypothesis
+          end
+        end
       end
-
-      process_audio(buffer, max_samples)
+      
+      true
     end
 
-    def process_audio(buffer, max_samples)
-      sample_count = recordable.read_audio(buffer, max_samples)
-
-      if sample_count
-        decoder.process_raw(buffer, sample_count)
-
+    # Read a frame of audio data from the recordable interface
+    #
+    # @param [FFI::Pointer] buffer Buffer to read audio data into
+    # @param [Integer] frame_size Number of samples to read
+    # @return [Boolean] True if frame was read successfully, false otherwise
+    def read_frame(buffer, frame_size)
+      sample_count = recordable.read_audio(buffer, frame_size)
+      
+      if sample_count && sample_count > 0
         # Check for a delay for example in case of non-blocking live audio
         if recordable.respond_to?(:read_audio_delay)
-          sleep recordable.read_audio_delay(max_samples)
+          sleep recordable.read_audio_delay(frame_size)
         end
+        true
+      else
+        false
       end
-
-      sample_count
     end
   end
 end

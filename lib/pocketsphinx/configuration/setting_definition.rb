@@ -35,8 +35,9 @@ module Pocketsphinx
             arg = API::Sphinxbase::Argument.new(arg_array[i])
             break if arg[:name].nil?
 
-            # Remove '-' from argument name
-            name = arg[:name][1..-1]
+            # Remove '-' from argument name if it exists
+            raw_name = arg[:name]
+            name = raw_name.start_with?('-') ? raw_name[1..-1] : raw_name
             setting_defs[name] = new(name, arg[:type], arg[:deflt], arg[:doc])
           end
         end

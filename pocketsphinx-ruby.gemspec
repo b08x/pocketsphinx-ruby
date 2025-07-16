@@ -12,16 +12,17 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Provides Ruby FFI bindings for Pocketsphinx, a lightweight speech recognition engine.}
   spec.homepage      = "https://github.com/watsonbox/pocketsphinx-ruby"
   spec.license       = "MIT"
+  spec.required_ruby_version = ">= 3.0"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "ffi", ">= 1.9"
+  spec.add_dependency "ffi", ">= 1.15"
 
-  spec.add_development_dependency "bundler", "~> 1.6"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "rspec", "~> 3.6.0"
-  spec.add_development_dependency "coveralls"
+  spec.add_development_dependency "bundler", ">= 2.0"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rspec", "~> 3.12"
+  spec.add_development_dependency "coveralls", "~> 0.8"
 end
