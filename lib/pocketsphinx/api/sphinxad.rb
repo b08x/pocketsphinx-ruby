@@ -27,7 +27,7 @@ module Pocketsphinx
             input_parameters[:device] = FFI::PortAudio::API.Pa_GetDefaultInputDevice
             input_parameters[:channelCount] = 1
             input_parameters[:sampleFormat] = 0x00000008  # paInt16
-            input_parameters[:suggestedLatency] = 0.1
+            input_parameters[:suggestedLatency] = 0.2
             
             stream_ptr = FFI::MemoryPointer.new(:pointer)
             
@@ -76,20 +76,20 @@ module Pocketsphinx
           return -1 unless @recording && @stream
           
           begin
-            # Check how many frames are available
-            available = FFI::PortAudio::API.Pa_GetStreamReadAvailable(@stream)
-            return 0 if available <= 0
-            
-            # Read up to max_samples frames
-            frames_to_read = [available, max_samples].min
-            
-            result = FFI::PortAudio::API.Pa_ReadStream(@stream, buffer, frames_to_read)
+            # For frame-based processing, read exactly the requested number of samples
+            # This aligns with endpointer frame requirements
+            result = FFI::PortAudio::API.Pa_ReadStream(@stream, buffer, max_samples)
             
             if result == :paNoError
-              frames_to_read
+              max_samples
             else
-              puts "Error reading audio: #{FFI::PortAudio::API.Pa_GetErrorText(result)}"
-              -1
+              # Check if it's just no data available (not an error for non-blocking)
+              if result.to_s.include?('Input overflowed') || result.to_s.include?('Stream is not active')
+                0
+              else
+                puts "Error reading audio: #{FFI::PortAudio::API.Pa_GetErrorText(result)}"
+                -1
+              end
             end
           rescue => e
             puts "Error reading audio: #{e.message}"

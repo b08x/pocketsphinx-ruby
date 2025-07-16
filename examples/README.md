@@ -19,7 +19,9 @@ Before running these examples, ensure you have:
 ### Basic Examples
 
 #### `decode_audio_file.rb`
+
 Basic file-based speech recognition. Demonstrates:
+
 - Loading and decoding a raw audio file
 - Getting recognition hypothesis
 - Extracting word-level timing information
@@ -29,7 +31,9 @@ ruby examples/decode_audio_file.rb
 ```
 
 #### `pocketsphinx_continuous.rb`
+
 Continuous live speech recognition using the high-level API. Demonstrates:
+
 - Real-time speech recognition
 - Endpointer-based Voice Activity Detection
 - Simple recognition loop
@@ -41,7 +45,9 @@ ruby examples/pocketsphinx_continuous.rb
 ### Audio Examples
 
 #### `record_audio_file.rb`
+
 Record audio to a file using frame-based processing. Demonstrates:
+
 - PortAudio-based audio recording
 - Frame-aligned audio capture
 - Endpointer frame size usage
@@ -53,7 +59,9 @@ ruby examples/record_audio_file.rb
 ### Advanced Examples
 
 #### `endpointer_demo.rb`
+
 Voice Activity Detection (VAD) without recognition. Demonstrates:
+
 - PocketSphinx v5 endpointer functionality
 - Speech start/end detection
 - Real-time speech activity monitoring
@@ -63,7 +71,9 @@ ruby examples/endpointer_demo.rb
 ```
 
 #### `advanced_recognition.rb`
+
 Advanced recognition with custom configuration. Demonstrates:
+
 - Custom endpointer parameters
 - Partial and final recognition results
 - Manual integration of endpointer and decoder
@@ -74,7 +84,9 @@ ruby examples/advanced_recognition.rb
 ```
 
 #### `keyword_spotter.rb`
+
 Keyword spotting with dynamic reconfiguration. Demonstrates:
+
 - Keyword-based recognition
 - Dynamic configuration changes
 - Context switching
@@ -86,6 +98,7 @@ ruby examples/keyword_spotter.rb
 ## New in PocketSphinx v5
 
 ### Endpointer-based VAD
+
 PocketSphinx v5 introduced a new endpointer system for Voice Activity Detection, replacing the old `ps_get_in_speech()` approach. The endpointer provides:
 
 - **Frame-based processing**: Uses fixed frame sizes (typically 480 samples at 16kHz)
@@ -94,6 +107,7 @@ PocketSphinx v5 introduced a new endpointer system for Voice Activity Detection,
 - **Timing information**: Precise speech start/end timestamps
 
 ### PortAudio Integration
+
 Audio device support now uses PortAudio instead of the removed SphinxAD library:
 
 - **Cross-platform support**: Works on Linux (ALSA), macOS (CoreAudio), Windows (DirectSound/WASAPI)
@@ -101,6 +115,7 @@ Audio device support now uses PortAudio instead of the removed SphinxAD library:
 - **Better error handling**: Improved audio device error reporting
 
 ### Frame-based Architecture
+
 All audio processing now uses consistent frame sizes:
 
 - **Fixed frame size**: 480 samples (30ms at 16kHz) by default
@@ -110,6 +125,7 @@ All audio processing now uses consistent frame sizes:
 ## Troubleshooting
 
 ### Audio Issues
+
 If you encounter audio problems:
 
 1. **Check microphone permissions**: Ensure your application can access the microphone
@@ -117,6 +133,7 @@ If you encounter audio problems:
 3. **Check ALSA configuration**: The ALSA warnings in output are normal and can be ignored
 
 ### Recognition Issues
+
 If recognition isn't working:
 
 1. **Verify PocketSphinx v5**: Ensure you have v5 installed, not the older v0.8
@@ -124,6 +141,7 @@ If recognition isn't working:
 3. **Test with file input**: Try `decode_audio_file.rb` first to verify basic functionality
 
 ### Performance Issues
+
 For better performance:
 
 1. **Use appropriate VAD settings**: Adjust endpointer parameters for your environment
