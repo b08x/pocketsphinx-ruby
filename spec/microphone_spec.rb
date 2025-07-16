@@ -5,6 +5,10 @@ describe Pocketsphinx::Microphone do
     def self.ad_open_dev(default_device, sample_rate)
       :audio_device
     end
+    
+    def self.ad_close(audio_device)
+      0
+    end
   end
 
   subject { @microphone }

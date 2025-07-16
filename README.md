@@ -27,7 +27,7 @@ The goal of this project is to make it as easy as possible for the Ruby communit
 
 - **Installation**: You must install PocketSphinx v5.0+ from source
 - **Configuration**: Some parameter names may have changed
-- **Audio Devices**: SphinxAD library is no longer available (live audio input affected)
+- **Audio Devices**: SphinxAD library replaced with PortAudio for live audio input
 - **Core Recognition**: All core speech recognition functionality works perfectly
 
 See the [Installation](#installation) section below for PocketSphinx v5 setup instructions.
@@ -45,7 +45,7 @@ This gem requires **PocketSphinx v5.0+** which must be installed from source. Th
 ```bash
 # Install build dependencies
 sudo apt-get update
-sudo apt-get install cmake build-essential git
+sudo apt-get install cmake build-essential git libportaudio2 libportaudio-dev
 
 # Clone and build PocketSphinx v5
 git clone https://github.com/cmusphinx/pocketsphinx.git
@@ -59,7 +59,7 @@ sudo ldconfig
 #### Fedora/CentOS/RHEL
 ```bash
 # Install build dependencies
-sudo dnf install cmake gcc-c++ make git
+sudo dnf install cmake gcc-c++ make git portaudio portaudio-devel
 
 # Clone and build PocketSphinx v5
 git clone https://github.com/cmusphinx/pocketsphinx.git
@@ -73,7 +73,7 @@ sudo ldconfig
 #### macOS
 ```bash
 # Install build dependencies
-brew install cmake
+brew install cmake portaudio
 
 # Clone and build PocketSphinx v5
 git clone https://github.com/cmusphinx/pocketsphinx.git
@@ -102,6 +102,27 @@ And then execute:
 Or install it yourself as:
 
     $ gem install pocketsphinx-ruby
+
+### Audio Device Prerequisites
+
+For live audio input functionality (microphone support), you'll need to install PortAudio:
+
+#### Ubuntu/Debian
+```bash
+sudo apt-get install libportaudio2 libportaudio-dev
+```
+
+#### Fedora/CentOS/RHEL
+```bash
+sudo dnf install portaudio portaudio-devel
+```
+
+#### macOS
+```bash
+brew install portaudio
+```
+
+The `ffi-portaudio` gem dependency will be automatically installed when you install `pocketsphinx-ruby`.
 
 
 ## Usage
@@ -154,7 +175,9 @@ You can find the output of `configuration.details` [here](https://github.com/wat
 
 ### Microphone
 
-The `Microphone` class uses Pocketsphinx's libsphinxad to record audio for speech recognition. For desktop applications this should normally be 16bit/16kHz raw PCM audio, so these are the default settings. The exact audio backend depends on [what was selected](https://github.com/cmusphinx/sphinxbase/blob/master/configure.in#L138) when libsphinxad was built. On OSX, OpenAL is [now supported](https://github.com/cmusphinx/sphinxbase/commit/5cc55c4721273681200e1f754ff0798ac073b950) and should work just fine.
+The `Microphone` class uses PortAudio (via the `ffi-portaudio` gem) to record audio for speech recognition. For desktop applications this should normally be 16bit/16kHz raw PCM audio, so these are the default settings. PortAudio provides cross-platform audio support for Linux (ALSA), macOS (CoreAudio), and Windows (DirectSound/WASAPI).
+
+**Note**: PocketSphinx v5 removed the SphinxAD library, so this gem now uses PortAudio as a replacement for live audio input functionality.
 
 For example, to record and save a 5 second raw audio file:
 
@@ -270,7 +293,8 @@ See [`sphinxtrain-ruby`](https://github.com/watsonbox/sphinxtrain-ruby) for an e
 
 **Audio Device Changes:**
 - SphinxAD library is no longer available in PocketSphinx v5
-- Live audio input functionality is affected (stub implementations provided)
+- Live audio input now uses PortAudio instead of SphinxAD
+- Requires PortAudio system dependency for microphone functionality
 - File-based audio processing works normally
 
 **Dependency Changes:**
