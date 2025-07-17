@@ -22,7 +22,7 @@ module Pocketsphinx
       @ps_audio_device = self.ps_api.ad_open_dev(default_device, sample_rate)
 
       # Ensure that audio device is closed when object is garbage collected
-      ObjectSpace.define_finalizer(self, self.class.finalize(ps_api, @ps_audio_device))
+      ObjectSpace.define_finalizer(self, self.class.finalize(self.ps_api, @ps_audio_device))
     end
 
     def self.finalize(ps_api, ps_audio_device)
